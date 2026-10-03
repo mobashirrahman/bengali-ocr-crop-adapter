@@ -1,0 +1,64 @@
+{
+  "task": "Printed Bengali word/crop OCR",
+  "dataset": "Mozhi-Bengali official test split",
+  "raw_test_examples": 10113,
+  "scorable_test_examples": 9233,
+  "exclusion": "Punctuation-only references excluded to match the project benchmark scorer.",
+  "prompt": "OCR this block image to HTML.",
+  "decoding": {
+    "do_sample": false,
+    "max_new_tokens": 64
+  },
+  "normalization": "NFC; fold curly single quotes to straight apostrophe; collapse whitespace; strip generated HTML before scoring.",
+  "aggregation": "Micro-averaged character and word edit rates across all scorable examples.",
+  "runs": [
+    {
+      "model": "surya-ocr-2 base (zero-shot)",
+      "examples": 9233,
+      "cer_micro": 0.10032231210911652,
+      "wer_micro": 0.20949750345267185,
+      "total_character_edits": 4700,
+      "reference_characters": 46849
+    },
+    {
+      "model": "Round 1 pilot (3k crops)",
+      "examples": 9233,
+      "cer_micro": 0.011035454332002818,
+      "wer_micro": 0.029108679485817485,
+      "total_character_edits": 517,
+      "reference_characters": 46849
+    },
+    {
+      "model": "Round 1 full-train",
+      "examples": 9233,
+      "cer_micro": 0.008943627398663792,
+      "wer_micro": 0.0195474343992351,
+      "total_character_edits": 419,
+      "reference_characters": 46849
+    },
+    {
+      "model": "Round 2",
+      "examples": 9233,
+      "cer_micro": 0.006424897009541292,
+      "wer_micro": 0.014766811855943907,
+      "total_character_edits": 301,
+      "reference_characters": 46849
+    },
+    {
+      "model": "Round 2b (this adapter)",
+      "examples": 9233,
+      "cer_micro": 0.0049947704326666524,
+      "wer_micro": 0.012535854669074684,
+      "total_character_edits": 234,
+      "reference_characters": 46849
+    },
+    {
+      "model": "Round 3",
+      "examples": 9233,
+      "cer_micro": 0.00646758735511964,
+      "wer_micro": 0.015191756082014236,
+      "total_character_edits": 303,
+      "reference_characters": 46849
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "run": "Round 2b",
+  "base_model": "datalab-to/surya-ocr-2",
+  "base_revision": "3b3d4cdf88d6928b0acdc75181b13206ea67c4a3",
+  "base_revision_note": "Training scripts did not set a revision explicitly; the local model cache pointed to this commit during the run.",
+  "adapter": {
+    "method": "LoRA",
+    "rank": 8,
+    "alpha": 16,
+    "dropout": 0.05,
+    "trainable_parameters": 6691328,
+    "trainable_parameter_fraction": 0.009952
+  },
+  "optimizer": "AdamW",
+  "learning_rate": 0.0001,
+  "effective_batch_size": 8,
+  "precision": "FP16",
+  "training_pool": {
+    "unique_page_examples": 3101,
+    "page_epochs": 4,
+    "mozhi_crop_examples": 18000,
+    "interleaved_examples": 30404
+  },
+  "resume_from_step": 22600,
+  "completed_steps": 30404,
+  "training_sources": [
+    "Mozhi-Bengali",
+    "locally generated synthetic Bengali pages",
+    "swapnil7777/bangla-ocr-dataset",
+    "shadid113/bangla-ocr-dataset",
+    "sahil74/bangla-ocr-1000",
+    "arobin79/bangla-ocr-validation_data_printed"
+  ]
+}

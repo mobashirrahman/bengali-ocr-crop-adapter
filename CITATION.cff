@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use this adapter, cite the project and the upstream Surya model."
+title: "Surya OCR 2 Bengali Crop Adapter — Round 2b"
+authors:
+  - family-names: Rahman
+    given-names: Mobashir
+version: 1.0.0
+date-released: 2026-10-04
+repository-code: https://github.com/mobashirrahman/surya-ocr-2-bengali-round2b
