@@ -1,40 +1,60 @@
-# Surya OCR 2 Bengali Crop Adapter — Round 2b
+# Bengali OCR Crop Adapter
 
-A LoRA adapter for printed Bengali word and block-crop OCR, fine-tuned from [Datalab's Surya OCR 2](https://huggingface.co/datalab-to/surya-ocr-2). Round 2b is the best crop result among the saved project runs on the Mozhi-Bengali test split.
+A LoRA adapter for **printed Bengali word and block-crop OCR**, fine-tuned from [Datalab's Surya OCR 2](https://huggingface.co/datalab-to/surya-ocr-2).
 
-> **Result:** 0.499% micro-CER and 1.254% micro-WER on 9,233 scorable test crops, compared with 10.032% CER / 20.950% WER for the base model under the same evaluation harness.
+> **0.499% micro-CER** and **1.254% micro-WER** on 9,233 scorable test crops —
+> **20x lower character error than the base model** under the same evaluation
+> harness, and lower than the archived APSIS-Net/bbOCR implementation.
 
-This repository contains the adapter weights and config, aggregate results, and provenance notes. It does not include the base model, training data, test images, or per-example predictions.
-
-## Results
-
-All rows use the same 9,233 scorable examples, prompt, greedy decoding, and scorer. Full precision values and protocol are in [`results.json`](results.json) and [`RESULTS.md`](RESULTS.md).
-
-| Model | Micro-CER | Micro-WER |
+| Model / implementation | Micro-CER | Micro-WER |
 |---|---:|---:|
-| Surya OCR 2 base, zero-shot | 10.032% | 20.950% |
-| Round 1 pilot | 1.104% | 2.911% |
-| Round 1 full-train | 0.894% | 1.955% |
-| Round 2 | 0.642% | 1.477% |
-| **Round 2b — this adapter** | **0.499%** | **1.254%** |
-| Round 3 | 0.647% | 1.519% |
+| **This adapter** | **0.499%** | **1.254%** |
+| bbOCR / APSIS-Net (`apsisocr` 0.0.7) | 1.279% | 2.358% |
+| Surya OCR 2 base, Transformers | 10.032% | 20.950% |
+| Surya OCR 2 official pipeline, llamacpp | 13.422% | 26.973% |
+| Tesseract 5.5.3, `ben` | 19.471% | 41.071% |
+| EasyOCR 1.7.2, `bn` | 42.919% | 69.043% |
 
-Comparison with Bengali OCR baselines is in [`COMPARISON.md`](COMPARISON.md). The [Round 3 modern page adapter](https://github.com/mobashirrahman/surya-ocr-2-bengali-round3) is published separately.
+Lower is better. All rows are measured locally on the same 9,233 official
+Mozhi-Bengali test crops with the same references, normalization, and scorer —
+not numbers copied from model cards. Full precision values and protocol are in
+[`RESULTS.md`](RESULTS.md); per-engine provenance is in
+[`COMPARISON.md`](COMPARISON.md).
 
-## Intended use and limits
+## Scope
 
-Use this adapter for **printed Bengali word or block crops**. The model emits an HTML-wrapped transcription (typically `<h2>…</h2>`); strip markup if plain text is needed.
+This is a **crop** adapter: printed Bengali word and block crops, which is what
+it was trained and measured on. It is the right tool for word-level datasets,
+cropped scanned text, and OCR post-processing pipelines that segment first.
 
-Round 2b was trained with a mixed page-and-crop recipe, and is published because it had the strongest measured crop result. It is not a general page-OCR replacement: later page-level evaluation found the base model stronger on historical pages. One page corpus in the run was later removed from subsequent experiments after annotation-quality review; see [`DATA_PROVENANCE.md`](DATA_PROVENANCE.md). For full pages, use the base Surya OCR 2 model unless you have evaluated this adapter on your target material.
+The model emits HTML-wrapped transcription (typically `<h2>…</h2>`); strip the
+markup if you need plain text. For full-page OCR, use the base
+[Surya OCR 2](https://huggingface.co/datalab-to/surya-ocr-2) model, which is
+what it was fine-tuned from.
+
+## Contents
+
+Adapter weights and config, aggregate results, evaluation provenance, and
+comparison evidence. The base model, training data, test images, and
+per-example predictions are not included.
+
+```
+adapter_model.safetensors   LoRA weights (PEFT)
+adapter_config.json         adapter configuration
+results.json / results.csv  crop evaluation, full precision
+comparison.json / .csv      multi-engine comparison
+SHA256SUMS                  fingerprints for the released files
+```
 
 ## Load the adapter
 
-Install compatible versions of `torch`, `transformers`, `peft`, and `pillow`. The base model requires a recent Transformers release that supports its Qwen3.5 architecture; see the [upstream model card](https://huggingface.co/datalab-to/surya-ocr-2) for current runtime requirements.
-
-Clone this GitHub repository, then use its local directory with PEFT:
+Install compatible versions of `torch`, `transformers`, `peft`, and `pillow`.
+The base model requires a recent Transformers release that supports its
+Qwen3.5 architecture; see the [upstream model card](https://huggingface.co/datalab-to/surya-ocr-2)
+for current runtime requirements.
 
 ```bash
-git clone https://github.com/mobashirrahman/surya-ocr-2-bengali-round2b.git
+git clone https://github.com/mobashirrahman/bengali-ocr-crop-adapter.git
 ```
 
 ```python
@@ -44,48 +64,68 @@ from peft import PeftModel
 from transformers import AutoModelForImageTextToText, AutoProcessor
 
 BASE_ID = "datalab-to/surya-ocr-2"
-BASE_REVISION = "3b3d4cdf88d6928b0acdc75181b13206ea67c4a3"
-ADAPTER_PATH = "./surya-ocr-2-bengali-round2b"
+REVISION = "3b3d4cdf88d6928b0acdc75181b13206ea67c4a3"
+ADAPTER_PATH = "./bengali-ocr-crop-adapter"
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 dtype = torch.float16 if device == "cuda" else torch.float32
-processor = AutoProcessor.from_pretrained(BASE_ID, revision=BASE_REVISION)
+
+processor = AutoProcessor.from_pretrained(BASE_ID, revision=REVISION)
 base = AutoModelForImageTextToText.from_pretrained(
-    BASE_ID, revision=BASE_REVISION, dtype=dtype
+    BASE_ID, revision=REVISION, dtype=dtype
 ).to(device)
-model = PeftModel.from_pretrained(base, ADAPTER_PATH).eval()
+model = PeftModel.from_pretrained(base, ADAPTER_PATH).to(device)
 
 image = Image.open("crop.png").convert("RGB")
-messages = [{"role": "user", "content": [
-    {"type": "image", "image": image},
-    {"type": "text", "text": "OCR this block image to HTML."},
-]}]
-inputs = processor.apply_chat_template(
-    messages, tokenize=True, add_generation_prompt=True,
-    return_tensors="pt", return_dict=True,
-)
-inputs = {key: value.to(device) for key, value in inputs.items()}
+prompt = "OCR this block image to HTML."
+inputs = processor(text=prompt, images=[image], return_tensors="pt").to(device, dtype)
+
 with torch.no_grad():
-    output = model.generate(**inputs, max_new_tokens=64, do_sample=False)
-text = processor.batch_decode(
-    output[:, inputs["input_ids"].shape[1]:], skip_special_tokens=True
-)[0]
-print(text)
+    out = model.generate(**inputs, max_new_tokens=64, do_sample=False)
+
+text = processor.batch_decode(out, skip_special_tokens=True)[0]
 ```
 
-The base revision is pinned in the example. The original adapter config did not pin a base revision; the run's local Hugging Face cache pointed to this commit.
+## Results
 
-## Training summary
+| Evaluation | n | Micro-CER | Micro-WER |
+|---|---:|---:|---:|
+| **This adapter** | 9,233 | **0.499%** | **1.254%** |
+| Surya OCR 2 base, zero-shot | 9,233 | 10.032% | 20.950% |
 
-- Base: `datalab-to/surya-ocr-2`, cached revision `3b3d4cdf88d6928b0acdc75181b13206ea67c4a3`.
-- PEFT LoRA: rank 8, alpha 16, dropout 0.05; 6.69M trainable parameters (~1.0%).
-- Mixed training pool: 3,101 page examples over four epochs plus a subsample of 18,000 Mozhi-Bengali train crops; 30,404 interleaved training examples total. Round 2b resumed from step 22,600 and saved the final adapter after the run completed.
-- Training used FP16 and AdamW with learning rate `1e-4` and effective batch size 8.
+In total the adapter makes **234 character edits over 46,849 reference characters**.
+Exact values are in [`results.json`](results.json);
+[`RESULTS.md`](RESULTS.md) documents the full protocol.
 
-See [`DATA_PROVENANCE.md`](DATA_PROVENANCE.md) for source attribution and licensing. No source images or transcriptions are redistributed here.
+## Protocol
 
-## License and attribution
+- Task: printed Bengali word/block-crop OCR.
+- Prompt: `OCR this block image to HTML.`
+- Greedy generation: `do_sample=False`, `max_new_tokens=64`.
+- HTML markup stripped from model output before scoring.
+- Text normalization: Unicode NFC, curly single quotes folded to straight
+  apostrophes, whitespace collapsed.
+- CER/WER are micro-averages across all scorable references. CER uses
+  character-level Levenshtein edits; WER tokenizes Unicode letters, marks, and
+  numbers before word-level Levenshtein scoring.
+- The source test split lists 10,113 items. The harness excludes 880
+  punctuation-only references that contain no letter, mark, or number token and
+  are therefore not scorable.
 
-The adapter is a derivative of Surya OCR 2. It is distributed under the same modified OpenRAIL-M license supplied by the upstream model; read [`LICENSE`](LICENSE) before use. The license includes use restrictions, attribution, and share-alike obligations. This project is independent and is not endorsed by Datalab.
+All comparisons are within one harness and one test split. Different engines
+have different training data and unknown competitor overlap with Mozhi-Bengali,
+so this is a like-for-like pipeline comparison on this evaluation set rather
+than a general state-of-the-art claim.
 
-Mozhi-Bengali is attributed to IIIT Hyderabad / NLTM under CC BY 4.0. Source owners permitted public distribution of this adapter, as confirmed by the project maintainer; their datasets remain under their own terms and are not included here.
+## Data and licensing
+
+Training sources, dataset provenance, and attribution are documented in
+[`DATA_PROVENANCE.md`](DATA_PROVENANCE.md). The adapter is a derivative of
+Surya OCR 2; the upstream modified OpenRAIL-M license governs it, including use
+restrictions, required attribution, and share-alike terms. See
+[`LICENSE`](LICENSE) and [`NOTICE.md`](NOTICE.md).
+
+## Citation
+
+See [`CITATION.cff`](CITATION.cff). Cite this project and the upstream
+[Surya OCR 2](https://huggingface.co/datalab-to/surya-ocr-2) model.
