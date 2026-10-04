@@ -19,6 +19,8 @@ All rows use the same 9,233 scorable examples, prompt, greedy decoding, and scor
 | **Round 2b — this adapter** | **0.499%** | **1.254%** |
 | Round 3 | 0.647% | 1.519% |
 
+Comparison with Bengali OCR baselines is in [`COMPARISON.md`](COMPARISON.md). The [Round 3 modern page adapter](https://github.com/mobashirrahman/surya-ocr-2-bengali-round3) is published separately.
+
 ## Intended use and limits
 
 Use this adapter for **printed Bengali word or block crops**. The model emits an HTML-wrapped transcription (typically `<h2>…</h2>`); strip markup if plain text is needed.
@@ -29,6 +31,12 @@ Round 2b was trained with a mixed page-and-crop recipe, and is published because
 
 Install compatible versions of `torch`, `transformers`, `peft`, and `pillow`. The base model requires a recent Transformers release that supports its Qwen3.5 architecture; see the [upstream model card](https://huggingface.co/datalab-to/surya-ocr-2) for current runtime requirements.
 
+Clone this GitHub repository, then use its local directory with PEFT:
+
+```bash
+git clone https://github.com/mobashirrahman/surya-ocr-2-bengali-round2b.git
+```
+
 ```python
 import torch
 from PIL import Image
@@ -37,7 +45,7 @@ from transformers import AutoModelForImageTextToText, AutoProcessor
 
 BASE_ID = "datalab-to/surya-ocr-2"
 BASE_REVISION = "3b3d4cdf88d6928b0acdc75181b13206ea67c4a3"
-ADAPTER_ID = "mobashirrahman/surya-ocr-2-bengali-round2b"
+ADAPTER_PATH = "./surya-ocr-2-bengali-round2b"
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 dtype = torch.float16 if device == "cuda" else torch.float32
@@ -45,7 +53,7 @@ processor = AutoProcessor.from_pretrained(BASE_ID, revision=BASE_REVISION)
 base = AutoModelForImageTextToText.from_pretrained(
     BASE_ID, revision=BASE_REVISION, dtype=dtype
 ).to(device)
-model = PeftModel.from_pretrained(base, ADAPTER_ID).eval()
+model = PeftModel.from_pretrained(base, ADAPTER_PATH).eval()
 
 image = Image.open("crop.png").convert("RGB")
 messages = [{"role": "user", "content": [

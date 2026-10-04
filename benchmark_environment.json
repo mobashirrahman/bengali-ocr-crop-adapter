@@ -1,0 +1,47 @@
+{
+  "hardware": "NVIDIA GeForce RTX 2060 SUPER, 8 GiB VRAM",
+  "modern_baseline_run_date": "2026-10-04",
+  "crop_and_historical_baseline_archive_date": "2026-09-11",
+  "baseline_versions": {
+    "apsisocr": "0.0.7",
+    "onnxruntime": "1.19.2",
+    "fastdeploy-python": "1.0.7",
+    "numpy_apsis": "1.23.0",
+    "easyocr": "1.7.2",
+    "tesseract": "5.5.3"
+  },
+  "cached_model_files": {
+    "bengali.pth": {
+      "bytes": 215369934,
+      "sha256": "28d10d7dab96bf38c1d190d09a65a732130f5f34b28dcbd7e51aba3366146896"
+    },
+    "craft_mlt_25k.pth": {
+      "bytes": 83152330,
+      "sha256": "4a5efbfb48b4081100544e75e1e2b57f8de3d84f213004b14b85fd4b3748db17"
+    },
+    "bengali_crnn.pth": {
+      "bytes": 42013625,
+      "sha256": "fc1cf064e53d39f28fcf1586be858a42a05759921bad94cc9e7708cc99a3b784"
+    },
+    "bnocr.onnx": {
+      "bytes": 555185657,
+      "sha256": "634b254bb8bee7129a9f257a058d88ccdb3af18c557ce9fd31b677060643be2c"
+    },
+    "ben.traineddata": {
+      "bytes": 855841,
+      "sha256": "31163084c279aaebd376216f0c3d5c17ad4b5fee8db49dae79c20000b5de5964"
+    }
+  },
+  "baseline_scripts": {
+    "run_tesseract.py": "f659a861955fb9b0ad396c15d11cb7a1c3ad7d153a51de02684e6981102b6e0b",
+    "run_bbocr.py": "6a7d099d88eb86dae6655878088d22de09120d38f098048cbd8f275418f331c9",
+    "common.py": "6212aaeae33298440911e19b8331843ea7e39dd3876edf33e3c0aaca3ca5879c",
+    "run_easyocr.py": "96438bdb7b90ce2e2d37c3fefacfef60e3b43df7c1f876c2c7909f8c4d293fc3"
+  },
+  "modern_inference_input": "Original RGB/source page images; Surya adapter evaluator downscales longest side to 1568 px, conventional engines use their native preprocessing. Same references and scoring across engines.",
+  "adapter_load_validation": {
+    "date": "2026-10-04",
+    "base_revision": "3b3d4cdf88d6928b0acdc75181b13206ea67c4a3",
+    "check": "Both local published adapters load under PEFT and reproduce the first archived Mozhi crop hypothesis exactly using the pinned cached base, FP16, greedy decoding and 64 tokens. This is a load/inference smoke check, not a rerun of the full benchmark."
+  }
+}

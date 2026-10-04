@@ -1,0 +1,13 @@
+{
+  "audit": "SHA256 exact image bytes against all staged page training images",
+  "original_evaluation_pages": 90,
+  "retained_pages": 52,
+  "excluded_pages": 38,
+  "modern_unique_image_hashes": 90,
+  "matches_per_training_source": {
+    "swapnil": 0,
+    "sahil": 38,
+    "bn_synth_surya": 0
+  },
+  "limitations": "Near-duplicate images, edition-level overlap, and competitor training contamination were not audited"
+}
